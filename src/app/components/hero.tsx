@@ -165,7 +165,7 @@ const HeroSection = () => {
       if ((scrollingDown && currentProgress < 1.4) || (scrollingUp && currentProgress > 0)) {
         e.preventDefault();
         setScrollProgress(prev => {
-          const newProgress = Math.min(Math.max(prev + delta * 0.0002, 0), 1.4);
+          const newProgress = Math.min(Math.max(prev + delta * 0.0001, 0), 1.4);
           updateAnimations(newProgress);
           return newProgress;
         });
@@ -292,43 +292,59 @@ const HeroSection = () => {
       }
     }
 
-    // Third phase (0.75 to 1.1): Move elements to final positions and show about
-    if (progress > 0.75 && progress <= 1.1) {
-      const finalPhaseProgress = (progress - 0.75) / 0.35; // Normalize to 0-1
-
-      // Move name to top left
-      if (nameRef.current) {
-        gsap.to(nameRef.current, {
-          x: -window.innerWidth * 0.35,
-          y: -window.innerHeight * 0.35,
-          scale: 0.4,
-          duration: 0.8,
-          ease: 'power1.inOut'
-        });
+    // Get responsive position values based on screen size
+  const getResponsiveValues = () => {
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    return {
+      name: {
+        x: isMobile ? 0.25 : 0.35,
+        y: isMobile ? 0.25 : 0.35
+      },
+      model: {
+        x: isMobile ? 0.25 : 0.4,
+        y: isMobile ? 0.25 : 0.4
       }
+    };
+  };
 
-      // Move role to follow name (empty in final state)
-      if (roleRef.current) {
-        gsap.to(roleRef.current, {
-          x: -window.innerWidth * 0.35,
-          y: -window.innerHeight * 0.3,
-          scale: 0.8,
-          duration: 0.8,
-          ease: 'power1.inOut',
-          text: ''
-        });
-      }
+  // Third phase (0.75 to 1.1): Move elements to final positions and show about
+  if (progress > 0.75 && progress <= 1.1) {
+    const finalPhaseProgress = (progress - 0.75) / 0.35; // Normalize to 0-1
+    const responsiveValues = getResponsiveValues();
 
-      // Move 3D model to corner
-      if (modelContainerRef.current) {
-        gsap.to(modelContainerRef.current, {
-          x: window.innerWidth * 0.4,
-          y: window.innerHeight * 0.4,
-          scale: 0.3,
-          duration: 0.8,
-          ease: 'power1.inOut'
-        });
-      }
+    // Move name to top left
+    if (nameRef.current) {
+      gsap.to(nameRef.current, {
+        x: -window.innerWidth * responsiveValues.name.x,
+        y: -window.innerHeight * responsiveValues.name.y,
+        scale: 0.4,
+        duration: 0.8,
+        ease: 'power1.inOut'
+      });
+    }
+
+    // Move role to follow name (empty in final state)
+    if (roleRef.current) {
+      gsap.to(roleRef.current, {
+        x: -window.innerWidth * responsiveValues.name.x,
+        y: -window.innerHeight * (responsiveValues.name.y - 0.05),
+        scale: 0.8,
+        duration: 0.8,
+        ease: 'power1.inOut',
+        text: ''
+      });
+    }
+
+    // Move 3D model to corner
+    if (modelContainerRef.current) {
+      gsap.to(modelContainerRef.current, {
+        x: window.innerWidth * responsiveValues.model.x,
+        y: window.innerHeight * responsiveValues.model.y,
+        scale: 0.3,
+        duration: 0.8,
+        ease: 'power1.inOut'
+      });
+    }
 
       // Show about section in center
       if (aboutSectionRef.current) {
@@ -509,14 +525,17 @@ const HeroSection = () => {
 
     // Reset positions when scrolling back (existing logic)
     if (progress <= 0.75) {
-      if (nameRef.current) {
-        gsap.to(nameRef.current, {
-          x: 0,
-          y: 0,
-          scale: 1,
-          duration: 0.3
-        });
-      }
+      const elementsToReset = [nameRef.current, roleRef.current, modelContainerRef.current];
+      elementsToReset.forEach(element => {
+        if (element) {
+          gsap.to(element, {
+            x: 0,
+            y: 0,
+            scale: 1,
+            duration: 0.3
+          });
+        }
+      });
 
       if (roleRef.current) {
         gsap.to(roleRef.current, {
@@ -574,8 +593,8 @@ const HeroSection = () => {
       // Title animation - minimalist typewriter
       if (titleRef.current) {
         gsap.to(titleRef.current, {
-          text: "Built in shadows",
-          duration: 2,
+          text: "Glitched into existence.",
+          duration: 3,
           delay: 1.2,
           ease: 'power3.out',
           onUpdate: () => {
@@ -834,7 +853,7 @@ const HeroSection = () => {
               letterSpacing: '0.3em'
             }}
           >
-            Systems that see, learn, and move — before you're aware.
+        Every cycle is a new dimension.
           </p>
         </div>
 
@@ -870,7 +889,7 @@ const HeroSection = () => {
               letterSpacing: '0.3em'
             }}
           >
-            FULL STACK DEVELOPER
+            FULL STACK ENGINEER
           </p>
         </div>
 
