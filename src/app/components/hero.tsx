@@ -142,7 +142,7 @@ const HeroSection = () => {
       e.preventDefault();
       const delta = e.deltaY;
       setScrollProgress(prev => {
-        const newProgress = Math.min(Math.max(prev + delta * 0.001, 0), 1);
+        const newProgress = Math.min(Math.max(prev + delta * 0.0003, 0), 1);
         updateAnimations(newProgress);
         return newProgress;
       });
