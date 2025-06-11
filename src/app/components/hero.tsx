@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { TextPlugin } from 'gsap/TextPlugin';
 import * as THREE from 'three';
+import { useNav } from '../context/NavContext';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 // Register GSAP plugins
@@ -12,6 +13,8 @@ if (typeof window !== 'undefined') {
 }
 
 const HeroSection = () => {
+    const { setNavVisible } = useNav();
+
   const heroRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
@@ -144,35 +147,25 @@ const HeroSection = () => {
   }, []);
 
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isExploringEnabled, setIsExploringEnabled] = useState(false);
 
   // Handle wheel events for custom scroll
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // Get current scroll progress before updating
-      let currentProgress = 0;
-      setScrollProgress(prev => {
-        currentProgress = prev;
-        return prev;
-      });
+      // If exploring is enabled, allow natural scrolling
+      if (isExploringEnabled) {
+        return;
+      }
+
+      // Always prevent default scroll until exploring is enabled
+      e.preventDefault();
 
       const delta = e.deltaY;
-      const scrollingUp = delta < 0;
-      const scrollingDown = delta > 0;
-
-      // Prevent default scroll and control animation in these cases:
-      // 1. Scrolling down and progress < 1.4
-      // 2. Scrolling up and progress > 0
-      if ((scrollingDown && currentProgress < 1.4) || (scrollingUp && currentProgress > 0)) {
-        e.preventDefault();
-        setScrollProgress(prev => {
-          const newProgress = Math.min(Math.max(prev + delta * 0.0001, 0), 1.4);
-          updateAnimations(newProgress);
-          return newProgress;
-        });
-      }
-      // Natural scrolling takes over when:
-      // 1. Scrolling down and progress >= 1.4
-      // 2. Scrolling up and progress <= 0
+      setScrollProgress(prev => {
+        const newProgress = Math.min(Math.max(prev + delta * 0.0001, 0), 1.4);
+        updateAnimations(newProgress);
+        return newProgress;
+      });
     };
 
     const heroElement = heroRef.current;
@@ -185,7 +178,7 @@ const HeroSection = () => {
         heroElement.removeEventListener('wheel', handleWheel);
       }
     };
-  }, []);
+  }, [isExploringEnabled]);
 
   // Function to handle button clicks
   const handleLetsTalk = () => {
@@ -194,6 +187,8 @@ const HeroSection = () => {
   };
 
   const handleContinueExploring = () => {
+    setIsExploringEnabled(true); // Enable natural scrolling
+     setNavVisible(true); // Add this line
     const aboutSection = document.getElementById('about');
     if (aboutSection) {
       aboutSection.scrollIntoView({ behavior: 'smooth' });

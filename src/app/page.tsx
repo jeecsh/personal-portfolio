@@ -1,19 +1,34 @@
 'use client';
 
-import HeroSection from  "../app/components/hero"
+import HeroSection from "../app/components/hero"
 import { useEffect } from 'react';
+import AboutSection from '../app/components/about';
+import ModernNavbar from '../app/components/nav';
+import { NavProvider, useNav } from '../app/context/NavContext';
+import InteractiveScrollSection from '../app/components/skills'
+import ShowcaseSection from '../app/components/showcase';
+function MainContent() {
+  const { isNavVisible } = useNav();
 
-export default function Home() {
   useEffect(() => {
-    // Smooth scrolling behavior
     document.documentElement.style.scrollBehavior = 'smooth';
   }, []);
 
   return (
     <main className="min-h-screen">
       <HeroSection />
-      
-
+      {isNavVisible && <ModernNavbar />}
+      <AboutSection />
+      <ShowcaseSection/>
+      <InteractiveScrollSection/>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <NavProvider>
+      <MainContent />
+    </NavProvider>
   );
 }

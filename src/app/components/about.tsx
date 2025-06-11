@@ -1,226 +1,277 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { TextPlugin } from 'gsap/TextPlugin';
+import { useEffect, useRef, useState } from 'react';
 
-// Register GSAP plugins
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(TextPlugin);
-}
+const AboutSection = () => {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number | null>(null);
+  
+  const [scrollY, setScrollY] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const [stats, setStats] = useState([
+    { label: 'Projects Completed', value: 50, count: 0 },
+    { label: 'Years Experience', value: 5, count: 0 },
+    { label: 'Technologies Used', value: 25, count: 0 },
+    { label: 'Systems Scaled', value: 12, count: 0 },
+  ]);
 
-const WelcomeToMyPortfolio = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const maskRef = useRef<HTMLDivElement>(null);
-  const lineRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const subtitleRef = useRef<HTMLParagraphElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const scrollIndicatorRef = useRef<HTMLDivElement>(null);
-  const scrollLineRef = useRef<HTMLDivElement>(null);
-  const scrollTextRef = useRef<HTMLSpanElement>(null);
-
+  // Scroll tracking
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Initial mask animation
-      gsap.fromTo(maskRef.current,
-        { scaleY: 1 },
-        {
-          scaleY: 0,
-          duration: 1.5,
-          delay: 0.5,
-          ease: 'power3.inOut',
-          transformOrigin: 'top center'
-        }
-      );
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
 
-      // Line animation
-      gsap.fromTo(lineRef.current,
-        { scaleX: 0 },
-        {
-          scaleX: 1,
-          duration: 2,
-          delay: 1,
-          ease: 'power3.out'
-        }
-      );
-
-      // Title animation - minimalist typewriter
-      if (titleRef.current) {
-        gsap.to(titleRef.current, {
-          text: "WELCOME TO MY PORTFOLIO",
-          duration: 2,
-          delay: 1.2,
-          ease: 'power3.out',
-          onUpdate: () => {
-            if (titleRef.current) {
-              titleRef.current.style.opacity = '1';
-            }
-          }
-        });
-      }
-
-      // Subtitle animation
-      if (subtitleRef.current) {
-        gsap.fromTo(subtitleRef.current,
-          {
-            opacity: 0,
-            y: 20,
-            filter: 'blur(5px)'
-          },
-          {
-            opacity: 0.7,
-            y: 0,
-            filter: 'blur(0px)',
-            duration: 1.5,
-            delay: 2.5,
-            ease: 'power3.out'
-          }
-        );
-      }
-
-      // Grid animation
-      if (gridRef.current) {
-        const gridItems = gridRef.current.querySelectorAll('.grid-item');
-        gsap.fromTo(gridItems,
-          {
-            opacity: 0,
-            y: 30,
-            scale: 0.9
-          },
-          {
-            opacity: 0.3,
-            y: 0,
-            scale: 1,
-            duration: 1.5,
-            delay: 3,
-            stagger: 0.1,
-            ease: 'power3.out'
-          }
-        );
-      }
-
-      // Scroll indicator entrance animation
-      if (scrollIndicatorRef.current) {
-        gsap.fromTo(scrollIndicatorRef.current,
-          {
-            opacity: 0,
-            y: 20
-          },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 1,
-            delay: 3.5,
-            ease: 'power3.out'
-          }
-        );
-
-        // Subtle pulsing animation for scroll indicator
-        gsap.to(scrollIndicatorRef.current, {
-          opacity: 0.3,
-          duration: 2,
-          repeat: -1,
-          yoyo: true,
-          ease: 'power2.inOut',
-          delay: 4
-        });
-      }
-
-    }, containerRef);
-
-    return () => ctx.revert();
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Vertical lines background animation
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Vertical lines configuration
+    const lines = [];
+    const numLines = 8;
+    const lineSpacing = canvas.width / (numLines + 1);
+    
+    for (let i = 0; i < numLines; i++) {
+      lines.push({
+        x: lineSpacing * (i + 1),
+        speed: 0.5 + Math.random() * 0.5,
+        opacity: 0.05 + Math.random() * 0.05,
+        offset: Math.random() * canvas.height
+      });
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw vertical lines with downward motion
+      lines.forEach(line => {
+        line.offset += line.speed;
+        if (line.offset > canvas.height) {
+          line.offset = 0;
+        }
+        
+        ctx.strokeStyle = `rgba(255, 255, 255, ${line.opacity})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(line.x, line.offset);
+        ctx.lineTo(line.x, line.offset + canvas.height * 0.3);
+        ctx.stroke();
+      });
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    // Intersection Observer
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsVisible(entry.isIntersecting);
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+      observer.disconnect();
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, []);
+
+  // Fixed number counting effect
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const duration = 2000; // Animation duration in ms
+    const startTime = Date.now();
+
+    const animateCount = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      setStats(prevStats => 
+        prevStats.map(stat => ({
+          ...stat,
+          count: Math.floor(progress * stat.value)
+        }))
+      );
+
+      if (progress < 1) {
+        requestAnimationFrame(animateCount);
+      }
+    };
+
+    animateCount();
+  }, [isVisible]);
+
   return (
-    <section 
-      ref={containerRef}
-      className="relative h-screen flex items-center justify-center overflow-hidden bg-black"
+    <section
+      id="about"
+      ref={sectionRef}
+      className="relative min-h-screen bg-black text-white overflow-hidden"
     >
-      {/* Intro mask */}
-      <div 
-        ref={maskRef}
-        className="absolute inset-0 bg-black z-50 pointer-events-none"
+      {/* Vertical Lines Background */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        style={{ zIndex: 1 }}
       />
 
       {/* Content Container */}
-      <div className="relative z-10 container mx-auto px-6 flex flex-col items-center justify-start pt-5 h-full">
-        {/* Text Content */}
-        <div className="text-center mb-16">
-          {/* Horizontal line */}
-          <div 
-            ref={lineRef}
-            className="h-px w-0 bg-white mx-auto mb-8"
-            style={{ maxWidth: '200px' }}
-          />
-          
-          <h1 
-            ref={titleRef}
-            className="text-5xl md:text-7xl font-light text-white tracking-tight opacity-0"
-            style={{ 
+      <div className="relative z-10 container mx-auto px-6 py-32">
+        {/* Header */}
+        <div 
+          className={`text-center mb-32 transition-all duration-1000 transform ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
+          <h2
+            className="text-5xl md:text-7xl font-light text-white mb-4 tracking-tight"
+            style={{
               fontFamily: "'Bebas Neue', sans-serif",
-              letterSpacing: '0.1em',
+              letterSpacing: '0.05em',
             }}
-          />
+          >
+            ABOUT
+          </h2>
           
-          <p 
-            ref={subtitleRef}
-            className="text-sm md:text-base text-gray-400 tracking-widest mt-4 uppercase"
+          <div className="h-px w-24 bg-white mx-auto mb-6 opacity-30 transform scale-x-0 animate-[scaleX_1s_ease-out_0.5s_forwards]" />
+          
+          <p
+            className="text-sm md:text-base text-gray-400 tracking-widest uppercase"
             style={{
               fontFamily: "'Rajdhani', sans-serif",
               fontWeight: 300,
-              letterSpacing: '0.3em'
+              letterSpacing: '0.3em',
             }}
           >
-            EXPLORE MY WORK AND CREATIONS
+            Full Stack Engineer & AI Specialist
           </p>
         </div>
 
-        {/* Decorative Grid */}
+        {/* Main Content */}
         <div 
-          ref={gridRef}
-          className="absolute inset-0 w-full h-full pointer-events-none"
+          className={`transition-all duration-1000 delay-300 transform ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
         >
-          {/* Grid lines */}
-          {[...Array(10)].map((_, i) => (
-            <div 
-              key={`h-${i}`} 
-              className="grid-item absolute top-0 left-0 w-full h-px bg-white bg-opacity-10"
-              style={{ top: `${(i + 1) * 10}%` }}
-            />
-          ))}
-          {[...Array(10)].map((_, i) => (
-            <div 
-              key={`v-${i}`} 
-              className="grid-item absolute top-0 left-0 w-px h-full bg-white bg-opacity-10"
-              style={{ left: `${(i + 1) * 10}%` }}
-            />
-          ))}
-        </div>
-      </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-32">
+            {/* Bio Section */}
+            <div className="transform transition-all duration-700 delay-500 hover:translate-x-2">
+              <h3
+                className="text-2xl md:text-3xl font-light mb-8 text-white"
+                style={{
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  letterSpacing: '0.05em',
+                }}
+              >
+                THE ENGINEER
+              </h3>
+              
+              <div className="space-y-6">
+                <p
+                  className="text-base md:text-lg text-gray-300 leading-relaxed transition-colors duration-500 hover:text-white"
+                  style={{
+                    fontFamily: "'Rajdhani', sans-serif",
+                    fontWeight: 300,
+                  }}
+                >
+                  I architect systems that bridge the gap between cutting-edge AI and production-ready applications. My approach combines rigorous engineering with creative problem-solving to deliver solutions that scale.
+                </p>
+                
+                <p
+                  className="text-base md:text-lg text-gray-300 leading-relaxed transition-colors duration-500 hover:text-white"
+                  style={{
+                    fontFamily: "'Rajdhani', sans-serif",
+                    fontWeight: 300,
+                  }}
+                >
+                  From designing neural networks that understand natural language to building distributed systems that handle millions of requests, I thrive on pushing the boundaries of what's possible with technology.
+                </p>
+              </div>
+            </div>
 
-      {/* Animated Scroll Indicator */}
-      <div 
-        ref={scrollIndicatorRef}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-gray-500 opacity-0"
-      >
-        <div className="flex flex-col items-center space-y-2">
-          <span 
-            ref={scrollTextRef}
-            className="text-xs tracking-widest transition-all duration-300"
-            style={{ letterSpacing: '0.3em' }}
-          >
-            SCROLL
-          </span>
+            {/* Stats Section */}
+            <div className="transform transition-all duration-700 delay-700 hover:translate-x-2">
+              <h3
+                className="text-2xl md:text-3xl font-light mb-8 text-white"
+                style={{
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  letterSpacing: '0.05em',
+                }}
+              >
+                THE NUMBERS
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-8">
+                {stats.map((stat, index) => (
+                  <div 
+                    key={index} 
+                    className="border-b border-gray-800 pb-6 group cursor-pointer transform transition-all duration-500 hover:scale-105"
+                    style={{
+                      animationDelay: `${index * 100}ms`
+                    }}
+                  >
+                    <div
+                      className="text-4xl md:text-5xl font-light text-white mb-2 transition-all duration-500 group-hover:text-gray-300"
+                      style={{
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        letterSpacing: '0.05em',
+                      }}
+                    >
+                      {stat.count}+
+                    </div>
+                    <div
+                      className="text-xs md:text-sm text-gray-400 uppercase tracking-widest transition-colors duration-500 group-hover:text-white"
+                      style={{
+                        fontFamily: "'Rajdhani', sans-serif",
+                        letterSpacing: '0.2em',
+                      }}
+                    >
+                      {stat.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Divider */}
           <div 
-            ref={scrollLineRef}
-            className="w-px bg-gray-500 transition-all duration-300"
-            style={{ height: '32px' }}
-          />
+            className={`flex justify-center mt-32 transition-all duration-1000 delay-900 transform ${
+              isVisible ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
+            }`}
+          >
+            <div className="h-px w-64 bg-gradient-to-r from-transparent via-white to-transparent opacity-20" />
+          </div>
         </div>
       </div>
     </section>
   );
 };
 
-export default WelcomeToMyPortfolio;
+export default AboutSection;
