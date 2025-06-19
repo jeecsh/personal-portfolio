@@ -7,6 +7,7 @@ import ModernNavbar from '../app/components/nav';
 import { NavProvider, useNav } from '../app/context/NavContext';
 import InteractiveScrollSection from '../app/components/skills'
 import ShowcaseSection from '../app/components/showcase';
+import PortfolioGrid from '../app/components/projects';
 function MainContent() {
   const { isNavVisible } = useNav();
 
@@ -20,7 +21,9 @@ function MainContent() {
       {isNavVisible && <ModernNavbar />}
       <AboutSection />
       <ShowcaseSection/>
+      <PortfolioGrid/>
       <InteractiveScrollSection/>
+     
     </main>
   );
 }
