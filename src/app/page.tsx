@@ -8,6 +8,7 @@ import { NavProvider, useNav } from '../app/context/NavContext';
 import InteractiveScrollSection from '../app/components/skills'
 import ShowcaseSection from '../app/components/showcase';
 import PortfolioGrid from '../app/components/projects';
+import CreativeBlog from '../app/components/blog';
 function MainContent() {
   const { isNavVisible } = useNav();
 
@@ -22,8 +23,9 @@ function MainContent() {
       <AboutSection />
       <ShowcaseSection/>
       <PortfolioGrid/>
+
       <InteractiveScrollSection/>
-     
+     <CreativeBlog/>
     </main>
   );
 }

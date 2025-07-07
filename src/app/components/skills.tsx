@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import SkillsCarousel from './skillset'; // Assuming you have a SkillsCarousel component
 
 const AdvancedScrollCards = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -28,7 +29,9 @@ const AdvancedScrollCards = () => {
       cameraRef.current = camera;
 
       const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-      renderer.setSize(400, 400);
+      // Make renderer responsive
+      const size = Math.min(window.innerWidth * 0.8, 400);
+      renderer.setSize(size, size);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -51,6 +54,16 @@ const AdvancedScrollCards = () => {
       directionalLight.position.set(1, 1, 1);
       scene.add(directionalLight);
 
+      // Handle window resize
+      const handleResize = () => {
+        const size = Math.min(window.innerWidth * 0.8, 400);
+        camera.aspect = 1;
+        camera.updateProjectionMatrix();
+        renderer.setSize(size, size);
+      };
+
+      window.addEventListener('resize', handleResize);
+
       // Minimal animation
       const animate = () => {
         requestAnimationFrame(animate);
@@ -66,6 +79,7 @@ const AdvancedScrollCards = () => {
         if (model3DRef.current && renderer.domElement) {
           model3DRef.current.removeChild(renderer.domElement);
         }
+        window.removeEventListener('resize', handleResize);
       };
     }
   }, []);
@@ -164,31 +178,40 @@ const AdvancedScrollCards = () => {
 
   return (
     <div className="bg-black min-h-screen">
-      {/* Hero Section */}
-      <section className="h-screen flex items-center justify-center relative overflow-hidden">
-        <ArchitecturalBG pattern="grid" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black/80"></div>
-        <div className="text-center space-y-12 px-6 relative z-10">
-          <div className="space-y-4">
-            <div className="w-24 h-px bg-white mx-auto"></div>
-            <h1 className="text-8xl md:text-9xl font-thin tracking-wider text-white">
-              MINIMAL
-            </h1>
-            <div className="w-24 h-px bg-white mx-auto"></div>
+      {/* Added margin from top */}
+      <div className="pt-20 md:pt-32">
+        {/* Hero Section */}
+        <section className="h-screen flex items-center justify-center relative overflow-hidden" ref={containerRef}>
+          <ArchitecturalBG pattern="grid" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black/80"></div>
+          <div className="text-center mt-30 space-y-6 md:space-y-12 px-6 relative z-10 w-full">
+            <div className="space-y-2 md:space-y-4">
+              <div className="w-40 bg-white mx-auto"></div>
+        <h1 
+          className="text-5xl sm:text-3xl md:text-4xl lg:text-8xl font-light text-center mb-12 sm:mb-20 tracking-tight leading-tight text-white px-4"
+          style={{ 
+            fontFamily: "'Bebas Neue', sans-serif",
+            letterSpacing: '0.1em',
+            opacity: 1
+          }}
+        >
+          SKILLS <span className="text-gray-400">SET</span>
+        </h1>
+              <div className="w-24 h-px bg-white mx-auto"></div>
+            </div>
+          
+            
+            {/* Make SkillsCarousel responsive */}
+            <div className="mt-8 md:mt-12 w-full max-w-4xl mx-auto px-4">
+              <SkillsCarousel />
+              
+            </div>
+            
           </div>
-          <p className="text-xl text-gray-400 font-light tracking-wide max-w-2xl mx-auto leading-relaxed">
-            Where architectural precision meets digital innovation
-          </p>
-          <div className="animate-bounce mt-20">
-            <div className="w-px h-12 bg-white mx-auto"></div>
-            <div className="w-3 h-3 border border-white rounded-full mx-auto mt-2"></div>
-          </div>
-        </div>
-      </section>
-
-     
-      {/* Final Section */}
-    
+          
+        </section>
+        {/* Final Section */}
+      </div>  
     </div>
   );
 };
